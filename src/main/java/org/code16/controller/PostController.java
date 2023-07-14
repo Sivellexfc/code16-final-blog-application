@@ -9,6 +9,7 @@ import org.code16.entity.Post;
 import org.code16.services.entity.CommentService;
 import org.code16.services.entity.PostService;
 import org.code16.services.entity.UserService;
+import org.code16.services.security.JwtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,9 +23,13 @@ public class PostController {
     private final CommentService commentService;
     private final UserService userService;
     private final PostService postService;
+    private final JwtService jwtService;
 
-    @PostMapping("/save/{postId}")
-    public ResponseEntity<PostResponse> savePost(@RequestBody PostRequest postRequest, @PathVariable Long postId){
+    @PostMapping("/save")
+    public ResponseEntity<PostResponse> savePost(@RequestBody PostRequest postRequest,
+                                                 @RequestHeader (name="Authorization") String token){
+
+        System.out.println("username : " + token);
         return null;
     }
 
