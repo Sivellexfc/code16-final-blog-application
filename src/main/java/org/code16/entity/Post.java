@@ -24,7 +24,6 @@ public class Post {
     private String title;
     private String body;
 
-    private int viewCount;
 
     @Temporal(TemporalType.DATE)
     private Date publishedDate;
@@ -35,6 +34,7 @@ public class Post {
     @JoinColumn(name = "user_id",
             referencedColumnName = "id")
     @JsonIgnore
+    @ToString.Exclude
     private User user;
 
     @OneToMany(mappedBy = "post")

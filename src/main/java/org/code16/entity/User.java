@@ -45,6 +45,10 @@ public class User implements UserDetails {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
+    public void addPost(Post post){
+        this.posts.add(post);
+    }
+
     @Override
     public String getPassword(){
         return password;

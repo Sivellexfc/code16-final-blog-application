@@ -1,4 +1,13 @@
 package org.code16.dto.response;
 
-public class PostResponse {
+import org.code16.entity.User;
+
+import java.util.Date;
+
+public record PostResponse(
+        String title,
+        String body,
+        Date createdDate,
+        User user
+) {
 }

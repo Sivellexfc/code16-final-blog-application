@@ -1,19 +1,23 @@
 package org.code16.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.code16.dto.request.CommentRequest;
 import org.code16.dto.request.PostRequest;
-import org.code16.dto.response.CommentResponse;
 import org.code16.dto.response.PostResponse;
 import org.code16.entity.Post;
+import org.code16.entity.User;
 import org.code16.services.entity.CommentService;
 import org.code16.services.entity.PostService;
 import org.code16.services.entity.UserService;
 import org.code16.services.security.JwtService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -27,15 +31,48 @@ public class PostController {
 
     @PostMapping("/save")
     public ResponseEntity<PostResponse> savePost(@RequestBody PostRequest postRequest,
-                                                 @RequestHeader (name="Authorization") String token){
+                                                 @RequestHeader (name="Authorization") String authHeader){
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+        Optional<User> user = userService.findUserByUsername(username);
+        if(user.isPresent()){
+            Post post = new Post();
+            post.setTitle(postRequest.title());
+            post.setBody(postRequest.body());
+            post.setUser(user.get());
+            post.setPublishedDate(new Date());
 
-        System.out.println("username : " + token);
-        return null;
+            Post returnedPost = postService.save(post);
+
+            PostResponse postResponse = new PostResponse(
+                    returnedPost.getTitle(),
+                    returnedPost.getBody(),
+                    returnedPost.getPublishedDate(),
+                    returnedPost.getUser()
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(postResponse);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(null);
     }
 
     @GetMapping("/get/all")
-    public ResponseEntity<PostResponse> getAllPost(){
-        return null;
+    public ResponseEntity<List<PostResponse>> getAllPost(){
+
+        List<PostResponse> postResponseList = new ArrayList<>();
+
+        var list = postService.getAll();
+
+//        postService.getAll().forEach(post -> {
+//            PostResponse postResponse = new PostResponse(
+//                    post.getTitle(),
+//                    post.getBody(),
+//                    post.getPublishedDate(),
+//                    post.getUser()
+//            );
+//            postResponseList.add(postResponse);
+//        });
+
+        return ResponseEntity.status(HttpStatus.OK).body(postResponseList);
     }
 
     @GetMapping("/get/{userId}")
