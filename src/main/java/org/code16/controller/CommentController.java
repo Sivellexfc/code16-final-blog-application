@@ -26,7 +26,6 @@ import java.util.Optional;
 public class CommentController {
 
     private final CommentService commentService;
-    private final UserService userService;
     private final PostService postService;
     private final JwtService jwtService;
 

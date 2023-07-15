@@ -139,7 +139,7 @@ public class PostController {
             String token = authHeader.substring(7);
             String username = jwtService.extractUsername(token);
             Optional<User> user = userService.findUserByUsername(username);
-            if(returnedPost.get().getUser().getId() == user.get().getId()){
+            if(returnedPost.get().getUser().getId().equals(user.get().getId())){
                 Post post = new Post(
                         returnedPost.get().getId(),
                         postRequest.title(),
