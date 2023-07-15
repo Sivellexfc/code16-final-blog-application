@@ -5,6 +5,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+import org.code16.entity.User;
+import org.code16.services.entity.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -13,13 +16,17 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
 
     @Value("${application.security.jwt.secret-key}")
     private String secretKey;
+
+    private final UserService userService;
 
 //    private static final String SECRET_KEY = "d061f29d06acbcf000234ee92c10449443a973eca163020db129d295c77429d9";
 
@@ -27,6 +34,12 @@ public class JwtService {
         return extractClaim(token,Claims::getSubject);
     }
 
+    public Optional<User> getUser(String authHeader){
+        String token = authHeader.substring(7);
+        String username = this.extractUsername(token);
+        Optional<User> user = userService.findUserByUsername(username);
+        return user;
+    }
     public String generateToken(
             Map<String, Object> extraClaims,
             UserDetails userDetails

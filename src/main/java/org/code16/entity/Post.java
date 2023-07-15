@@ -36,7 +36,6 @@ public class Post {
     private User user;
 
     @OneToMany(mappedBy = "post")
-    @JsonIgnore
     private List<Comment> comments = new ArrayList<>();
 
     public void addComment(Comment comment){

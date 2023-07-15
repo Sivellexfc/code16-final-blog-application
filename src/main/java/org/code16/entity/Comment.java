@@ -1,5 +1,6 @@
 package org.code16.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,17 +20,13 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id", nullable = false)
     private Long id;
-
     private String content;
     @Temporal(TemporalType.DATE)
     private Date publishedDate;
-
-    private int likeCount;
-
-    @ManyToOne()
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JsonIgnore
     private Post post;
-
-    @ManyToOne()
+    @ManyToOne(fetch = FetchType.EAGER)
     private User user;
 
 }
