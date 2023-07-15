@@ -24,17 +24,15 @@ public class Post {
     private String title;
     private String body;
 
-
     @Temporal(TemporalType.DATE)
     private Date publishedDate;
     @Temporal(TemporalType.DATE)
     private Date updatedDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id",
-            referencedColumnName = "id")
+                referencedColumnName = "id")
     @JsonIgnore
-    @ToString.Exclude
     private User user;
 
     @OneToMany(mappedBy = "post")

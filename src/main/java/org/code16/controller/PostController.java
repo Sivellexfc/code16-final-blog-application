@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -57,41 +56,110 @@ public class PostController {
 
     @GetMapping("/get/all")
     public ResponseEntity<List<PostResponse>> getAllPost(){
-
         List<PostResponse> postResponseList = new ArrayList<>();
-
-        var list = postService.getAll();
-
-//        postService.getAll().forEach(post -> {
-//            PostResponse postResponse = new PostResponse(
-//                    post.getTitle(),
-//                    post.getBody(),
-//                    post.getPublishedDate(),
-//                    post.getUser()
-//            );
-//            postResponseList.add(postResponse);
-//        });
+        postService.getAll().forEach(post -> {
+            PostResponse postResponse = new PostResponse(
+                    post.getTitle(),
+                    post.getBody(),
+                    post.getPublishedDate(),
+                    post.getUser()
+            );
+            postResponseList.add(postResponse);
+        });
 
         return ResponseEntity.status(HttpStatus.OK).body(postResponseList);
     }
 
-    @GetMapping("/get/{userId}")
-    public ResponseEntity<PostResponse> getPostByUserId(@PathVariable Long userId){
+    @GetMapping("/get/user/id/{userId}")
+    public ResponseEntity<List<PostResponse>> getPostByUserId(@PathVariable Long userId){
+        Optional<User> user =  userService.findUserByUserId(userId);
+        if(user.isPresent()){
+            List<PostResponse> postResponseList = new ArrayList<>();
+            List<Post> posts = postService.getPostByUser(userId);
+            posts.forEach(post -> {
+                PostResponse postResponse = new PostResponse(
+                        post.getTitle(),
+                        post.getBody(),
+                        post.getPublishedDate(),
+                        post.getUser()
+                );
+                postResponseList.add(postResponse);
+            });
+            return ResponseEntity.status(HttpStatus.OK).body(postResponseList);
+        }
         return null;
     }
 
-    @GetMapping("/get/myPosts")
-    public ResponseEntity<List<PostResponse>> getPostByUserId(){
-        return null;
+    @GetMapping("/get/user/my-post")
+    public ResponseEntity<List<PostResponse>> getMyPost(@RequestHeader (name="Authorization") String authHeader){
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+        Optional<User> user = userService.findUserByUsername(username);
+
+        if(user.isPresent()){
+            List<Post> posts = postService.getPostByUser(user.get().getId());
+            List<PostResponse> postResponseList = new ArrayList<>();
+            posts.forEach(post -> {
+                PostResponse postResponse = new PostResponse(
+                        post.getTitle(),
+                        post.getBody(),
+                        post.getPublishedDate(),
+                        post.getUser()
+                );
+                postResponseList.add(postResponse);
+            });
+            return ResponseEntity.status(HttpStatus.OK).body(postResponseList);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @PostMapping("/delete/{postId}")
-    public ResponseEntity<PostResponse> deletePost(@RequestBody PostRequest postRequest,@PathVariable Long postId){
-        return null;
+    @DeleteMapping("/delete/{postId}")
+    public ResponseEntity deletePost(@PathVariable Long postId,
+                                     @RequestHeader (name="Authorization") String authHeader){
+        Optional<Post> post = postService.find(postId);
+        if(post.isPresent()){
+            String token = authHeader.substring(7);
+            String username = jwtService.extractUsername(token);
+            Optional<User> user = userService.findUserByUsername(username);
+            if(post.get().getUser().getId() == user.get().getId()){
+                postService.deletePost(post.get().getId());
+                return ResponseEntity.ok("Post silindi");
+            }
+            else return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bunu silmeye izniniz yok!!!! ");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Post bulunamadı ");
     }
 
-    @PostMapping("/update/{postId}")
-    public ResponseEntity<PostResponse> updatePost(@RequestBody PostRequest postRequest,@PathVariable Long postId){
-        return null;
+    @PatchMapping("/update/{postId}")
+    public ResponseEntity<PostResponse> updatePost(@RequestBody PostRequest postRequest,
+                                                   @PathVariable Long postId,
+                                                   @RequestHeader (name="Authorization") String authHeader){
+        Optional<Post> returnedPost = postService.find(postId);
+        if(returnedPost.isPresent()){
+            String token = authHeader.substring(7);
+            String username = jwtService.extractUsername(token);
+            Optional<User> user = userService.findUserByUsername(username);
+            if(returnedPost.get().getUser().getId() == user.get().getId()){
+                Post post = new Post(
+                        returnedPost.get().getId(),
+                        postRequest.title(),
+                        postRequest.body(),
+                        returnedPost.get().getPublishedDate(),
+                        new Date(),
+                        returnedPost.get().getUser(),
+                        returnedPost.get().getComments()
+                );
+                PostResponse postResponse = new PostResponse(
+                        post.getTitle(),
+                        post.getBody(),
+                        post.getPublishedDate(),
+                        post.getUser()
+                );
+                postService.updatePost(post);
+                return ResponseEntity.ok(postResponse);
+            }
+            else return ResponseEntity.badRequest().body(null);
+        }
+        else return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
 }

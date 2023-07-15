@@ -38,6 +38,7 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user")
     @JsonIgnore
+    @ToString.Exclude
     private List<Post> posts = new ArrayList<>();
 
     @Override

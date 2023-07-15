@@ -23,6 +23,7 @@ public class SecurityConfig {
         httpSecurity
                 .csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
+                        .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/api/auth/**","/h2-console/**","/h2-console/*")
                         .permitAll()
                         .anyRequest()
